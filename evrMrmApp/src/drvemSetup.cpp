@@ -53,6 +53,10 @@
  #define strtok_r(strToken,strDelimit,lasts ) (*(lasts) = strtok((strToken),(strDelimit)))
 #endif
 
+// macros for mtca_evr_model variable in mrmEvrSetupPCI()
+#define MTCA_EVR_FPUNIV_MODEL "U"
+#define MTCA_EVR_FPIFB_MODEL "I"
+
 /* Bit mask used to communicate which VME interrupt levels
  * are used.  Bits are set by mrmEvrSetupVME().  Levels are
  * enabled later during iocInit.
@@ -174,12 +178,26 @@ static const EVRMRM::Config cpci_evr_300 = {
 };
 
 static const EVRMRM::Config mtca_evr_300 = {
-    "mTCA-EVR-300",
+    "mTCA-EVR-300I", // with IFB connector on FP
     16, // pulse generators
     8,  // prescalers
     4,  // FP outputs
     0,  // FPUV outputs (really 2, handled specially)
     16, // RB outputs  (via external IFB)
+    8,  // Backplane outputs
+    0,  // FP Delay outputs
+    0,  // CML/GTX outputs
+    MRMCML::typeTG300,
+    2,  // FP inputs
+};
+
+static const EVRMRM::Config mtca_evr_300u = {
+    "mTCA-EVR-300U", // with UNIV slots on FP
+    16, // pulse generators
+    8,  // prescalers
+    4,  // FP outputs
+    4,  // FPUV outputs (plus 2, handled specially, TCLKA and TCLKB)
+    16, // RB outputs  (RTM)
     8,  // Backplane outputs
     0,  // FP Delay outputs
     0,  // CML/GTX outputs
@@ -428,7 +446,7 @@ static bool checkUIOVersion(int,int,int*) {return false;}
 #endif
 
 void
-mrmEvrSetupPCI(const char* id,const char* pcispec)
+mrmEvrSetupPCI(const char* id,const char* pcispec, const char* mtca_evr_model)
 {
 try {
     bus_configuration bus;
@@ -469,8 +487,20 @@ try {
     case PCI_DEVICE_ID_MRF_PXIEVR_230: conf = &cpci_evr_230; break;
     case PCI_DEVICE_ID_MRF_EVRTG_300:  conf = &cpci_evrtg_300; break;
     case PCI_DEVICE_ID_MRF_CPCIEVR300: conf = &cpci_evr_300; break;
-    case PCI_DEVICE_ID_MRF_EVRMTCA300: conf = &mtca_evr_300; break;
-        // ambiguity
+    case PCI_DEVICE_ID_MRF_EVRMTCA300: 
+        if (mtca_evr_model) {
+            if (strcmp(mtca_evr_model, MTCA_EVR_FPUNIV_MODEL) == 0) 
+                conf = &mtca_evr_300u;
+            else if (strcmp(mtca_evr_model, MTCA_EVR_FPIFB_MODEL) == 0)
+                conf = &mtca_evr_300;
+            else {
+                printf("Error: Unknown uTCA EVR model defined for %s, aborting the initialization.\n", id);
+                return; 
+            }
+        }
+        else   
+            conf = &mtca_evr_300; // Like with MTCA_EVR_FPIFB_MODEL case
+        break;
     case PCI_DEVICE_ID_MRF_EVRTG_300E: // aka PCI_SUBDEVICE_ID_PCIE_EVR_300
         switch (cur->id.device) {
         case PCI_DEVICE_ID_EC_30: conf = &cpci_evrtg_300; break;

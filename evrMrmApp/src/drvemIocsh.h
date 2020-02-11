@@ -32,9 +32,8 @@ extern "C" {
  */
 epicsShareExtern int evrmrmVerb;
 
-
 void epicsShareFunc
-mrmEvrSetupPCI(const char* id, const char* pcispec);
+mrmEvrSetupPCI(const char* id, const char* pcispec, const char* mtca_evr_model = NULL);
 void epicsShareFunc
 mrmEvrSetupVME(const char* id,int slot,int base,int level, int vector);
 
