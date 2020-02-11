@@ -257,3 +257,10 @@ file "evrin.db"
 {"$(SYS){$(D)-In:0}", "$(EVR):FPIn0", "IN0 (TTL)"}
 {"$(SYS){$(D)-In:1}", "$(EVR):FPIn1", "IN1 (TTL)"}
 }
+
+file "evrDelayModule.template"
+{pattern
+{PID, P, OBJ}
+{0, "$(SYS){$(D)-Out:FP:DlyModule$(PID)}", "$(EVR):UnivDlyModule$(PID)"}
+{1, "$(SYS){$(D)-Out:FP:DlyModule$(PID)}", "$(EVR):UnivDlyModule$(PID)"}
+}

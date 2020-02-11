@@ -10,6 +10,7 @@ DB += mrmevrbase.template
 DB += mrmevrdc.template
 DB += mrmevrbufrx.db
 DB += sequencedemo.db
+DB += evrDelayModule.template
 
 DB += evr-pmc-230.db
 DB += evr-cpci-230.db
